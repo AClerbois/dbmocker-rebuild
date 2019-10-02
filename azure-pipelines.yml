@@ -78,7 +78,7 @@ jobs:
     displayName: Publish to GitHub
     inputs:
       gitHubConnection: 'GitHub'
-      repositoryName: 'aclerbois-sandbox/DbMocker'
+      repositoryName: 'aclerbois/DbMocker-Rebuild'
       action: 'create'
       target: '$(Build.SourceVersion)'
       tagSource: 'gitTag'
