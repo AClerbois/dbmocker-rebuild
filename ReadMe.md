@@ -1,4 +1,6 @@
-﻿# DbMocker - Simple Database Mocker for UnitTests
+# DbMocker - Simple Database Mocker for UnitTests
+
+[![Build Status](https://dev.azure.com/aclerbois-sandbox/dbmocker2/_apis/build/status/AClerbois.dbmocker-rebuild?branchName=master)](https://dev.azure.com/aclerbois-sandbox/dbmocker2/_build/latest?definitionId=8&branchName=master)
 
 ## Introduction
 
