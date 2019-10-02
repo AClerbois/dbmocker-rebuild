@@ -1,0 +1,47 @@
+trigger:
+- master
+
+jobs:
+
+- job: CompileSourceCode
+  displayName: Compile source code
+  pool: Default
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: Restore Package
+    inputs:
+      command: 'restore'
+      configuration: '$(BuildConfiguration)'
+      projects: '**/*.csproj'
+      feedsToUse: 'select'
+      
+  - task: DotNetCoreCLI@2
+    displayName: Build projects
+    inputs:
+      command: 'build'  
+      configuration: '$(BuildConfiguration)' 
+      projects: '**/*.csproj'
+      packDirectory: '$(Build.ArtifactStagingDirectory)'
+
+  - task: DotNetCoreCLI@2
+    displayName: Tests
+    inputs:
+      command: 'test'
+      configuration: '$(BuildConfiguration)'
+      projects: '**/*.Tests.csproj'
+      testRunTitle: 'Tests'
+
+  - task: DotNetCoreCLI@2
+    displayName: Package creation
+    inputs:
+      command: 'pack'
+      packagesToPack: 'DbMocker/DbMocker.csproj'
+      configuration: '$(BuildConfiguration)'
+      versioningScheme: 'off'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Artifact publication
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'DbMocker'
+      publishLocation: 'Container'
