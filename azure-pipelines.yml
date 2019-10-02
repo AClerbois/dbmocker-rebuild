@@ -2,6 +2,26 @@ trigger:
 - master
 
 jobs:
+- job: SourceCodeExtraction
+  displayName: Extract and compress source code
+  pool: Default
+  steps:   
+
+  - task: ArchiveFiles@2
+    displayName: Extract source code to zip
+    inputs:
+      rootFolderOrFile: '$(Build.Repository.LocalPath)'
+      includeRootFolder: true
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/DbMocker-source-code.zip'
+      replaceExistingArchive: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: Artifact publication
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'DbMocker'
+      publishLocation: 'Container'
 
 - job: CompileSourceCode
   displayName: Compile source code
@@ -45,3 +65,25 @@ jobs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: 'DbMocker'
       publishLocation: 'Container'
+
+- job: PublishOnGitHub
+  displayName: Publish artifact to GitHub
+  pool: Default
+  dependsOn: [
+    SourceCodeExtraction,
+    CompileSourceCode
+  ]
+  steps:
+  - task: GitHubRelease@1
+    displayName: Publish to GitHub
+    inputs:
+      gitHubConnection: 'GitHub'
+      repositoryName: 'aclerbois-sandbox/DbMocker'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'gitTag'
+      title: 'DbMocker'
+      releaseNotesSource: 'inline'
+      releaseNotesInline: 'My new version'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
