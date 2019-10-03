@@ -1,7 +1,5 @@
 # DbMocker - Simple Database Mocker for UnitTests
 
-[![Build Status](https://dev.azure.com/aclerbois-sandbox/dbmocker2/_apis/build/status/AClerbois.dbmocker-rebuild?branchName=master)](https://dev.azure.com/aclerbois-sandbox/dbmocker2/_build/latest?definitionId=8&branchName=master)
-
 ## Introduction
 
 This .NET library simplifies data mocking for UnitTests, to avoid a connection to a relational database.
