@@ -1,33 +1,89 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+jobs:
+- job: SourceCodeExtraction
+  displayName: Extract and compress source code
+  pool: Default
+  steps:   
 
-steps:
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
+  - task: ArchiveFiles@2
+    displayName: Extract source code to zip
+    inputs:
+      rootFolderOrFile: '$(Build.Repository.LocalPath)'
+      includeRootFolder: true
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/DbMocker-source-code.zip'
+      replaceExistingArchive: true
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/*Tests.csproj'
-    testRunTitle: 'Test'
+  - task: PublishBuildArtifacts@1
+    displayName: Artifact publication
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'DbMocker'
+      publishLocation: 'Container'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/*.csproj'
-    versioningScheme: 'off'
+- job: CompileSourceCode
+  displayName: Compile source code
+  pool: Default
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: Restore Package
+    inputs:
+      command: 'restore'
+      configuration: '$(BuildConfiguration)'
+      projects: '**/*.csproj'
+      feedsToUse: 'select'
+      
+  - task: DotNetCoreCLI@2
+    displayName: Build projects
+    inputs:
+      command: 'build'  
+      configuration: '$(BuildConfiguration)' 
+      projects: '**/*.csproj'
+      packDirectory: '$(Build.ArtifactStagingDirectory)'
+
+  - task: DotNetCoreCLI@2
+    displayName: Tests
+    inputs:
+      command: 'test'
+      configuration: '$(BuildConfiguration)'
+      projects: '**/*.Tests.csproj'
+      testRunTitle: 'Tests'
+
+  - task: DotNetCoreCLI@2
+    displayName: Package creation
+    inputs:
+      command: 'pack'
+      packagesToPack: 'DbMocker/DbMocker.csproj'
+      configuration: '$(BuildConfiguration)'
+      versioningScheme: 'off'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Artifact publication
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'DbMocker'
+      publishLocation: 'Container'
+
+- job: PublishOnGitHub
+  displayName: Publish artifact to GitHub
+  pool: Default
+  dependsOn: [
+    SourceCodeExtraction,
+    CompileSourceCode
+  ]
+  steps:
+  - task: GitHubRelease@1
+    displayName: Publish to GitHub
+    inputs:
+      gitHubConnection: 'GitHub Aclerbois'
+      repositoryName: 'aclerbois/DbMocker-Rebuild'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'gitTag'
+      title: 'DbMocker'
+      releaseNotesSource: 'inline'
+      releaseNotesInline: 'My new version'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
