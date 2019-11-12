@@ -1,5 +1,6 @@
 # DbMocker - Simple Database Mocker for UnitTests
 
+[![Build status](https://dev.azure.com/denisandadrien/RebuildPipelines/_apis/build/status/RebuildPipelines-CI)](https://dev.azure.com/denisandadrien/RebuildPipelines/_build/latest?definitionId=27)
 ## Introduction
 
 This .NET library simplifies data mocking for UnitTests, to avoid a connection to a relational database.
